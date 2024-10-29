@@ -20,7 +20,7 @@ func s_push(top **Comp, D int) {
 		*top = q
 	} else {
 		q.Next = *top
-		*top = q
+        *top = q
 	}
 }
 
@@ -37,7 +37,7 @@ func s_delete_key(top **Comp, N int) {
 		}
 		q.Data = 0
 		q.Next = nil
-		return
+		return 
 	}
 	prev = q
 	q = q.Next
