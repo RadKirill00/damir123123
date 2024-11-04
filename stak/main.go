@@ -12,16 +12,17 @@ type Comp struct {
 
 func s_push(top **Comp, D int) {
 	q := &Comp{
-		Data: D,
-		Next: nil,
-	}
+        Data: D,
+        Next: nil,
+    }
 
-	if *top == nil {
-		*top = q
-	} else {
-		q.Next = *top
+    if *top == nil {
         *top = q
-	}
+    } 
+
+     q.Next = *top
+    *top = q
+    
 }
 
 func s_delete_key(top **Comp, N int) {

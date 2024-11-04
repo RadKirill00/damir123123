@@ -1,12 +1,13 @@
 package main
 
 import (
-	
+	"sync"
+	"fmt"
 )
 
 
 /* Этап 1: Верификация заказа: проверка правильности данных. +
- Этап 2: Оплата: обработка платежа.
+ Этап 2: Оплата: обработка платежа. + 
  Этап 3: Отгрузка: добавление заказа в очередь на доставку.
  Этап 4: Каждый этап требует разного времени обработки, и система может обрабатывать несколько заказов одновременно. Необходимо разработать систему на Go, которая будет:
 
@@ -28,6 +29,29 @@ func(o *Order) Verify() bool {
 	}
 
 	return trueOrFalse
+}
+
+func (o *Order) Pay() bool {
+    // Обработка оплаты заказа
+    o.PaymentStatus = true
+	return o.PaymentStatus
+}
+
+func (o *Order) processOrder(order Order, orderCh chan Order, doneCh chan <- struct{}, wg sync.WaitGroup) {
+	defer wg.Done()
+	
+	if !order.Verify() {
+		fmt.Printf("Order %d failed verification\n", order.ID)
+		return
+	}
+
+	// Этап 2: Обработка платежа
+	if !order.Pay() {
+		fmt.Printf("Order %d failed payment processing\n", order.ID)
+		return
+	}
+
+	orderCh <- order
 }
 
 func main() {
