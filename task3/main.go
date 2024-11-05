@@ -37,7 +37,7 @@ func (o *Order) Pay() bool {
 	return o.PaymentStatus
 }
 
-func (o *Order) processOrder(order Order, orderCh chan Order, doneCh chan <- struct{}, wg sync.WaitGroup) {
+func (o *Order) ProcessOrder(order Order, wg *sync.WaitGroup, orderCh chan<- Order, doneCh chan<- struct{}) {
 	defer wg.Done()
 	
 	if !order.Verify() {
@@ -54,6 +54,40 @@ func (o *Order) processOrder(order Order, orderCh chan Order, doneCh chan <- str
 	orderCh <- order
 }
 
-func main() {
+func (o *Order) dostavkaOrder(order Order) {
+	fmt.Println("Заказ ", order.ID, " отправлен на доставку")
+}
 
+func main() {
+	orders := []Order{
+		{ID: 1, Name: "Product A", Quantity: 2},
+		{ID: 2, Name: "Product B", Quantity: 0}, 
+		{ID: 3, Name: "Product C", Quantity: 1},
+	}
+
+	var wg sync.WaitGroup
+	orderCh := make(chan Order)
+	doneCh := make(chan struct{})
+
+	// Запускаем горутины для обработки каждого заказа
+	for _, order := range orders {
+		wg.Add(1)
+		go order.ProcessOrder(order, &wg, orderCh, doneCh)
+	}
+
+	// Горутина для обработки заказов после оплаты и отгрузки
+	go func() {
+		for order := range orderCh {
+			// Этап 3: Отгрузка заказа
+			order.dostavkaOrder(order)
+		}
+		doneCh <- struct{}{}
+	}()
+
+	// Ожидаем завершения всех горутин
+	wg.Wait()
+	close(orderCh)
+
+	// Ожидаем завершения горутины, которая обрабатывает заказы после оплаты и отгрузки
+	<-doneCh
 }
